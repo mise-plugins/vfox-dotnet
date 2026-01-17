@@ -51,7 +51,7 @@ function PLUGIN:Available(ctx)
 
             if relErr == nil and relResp.status_code == 200 then
                 local relData = json.decode(relResp.body)
-                if relData ~= nil and relData["releases"] ~= nil then
+                if relData ~= nil and relData["releases"] ~= nil and type(relData["releases"]) == "table" then
                     for _, release in ipairs(relData["releases"]) do
                         -- Get SDK version from the release
                         if release["sdk"] ~= nil and release["sdk"]["version"] ~= nil then
@@ -71,7 +71,7 @@ function PLUGIN:Available(ctx)
                         end
 
                         -- Also check for additional SDKs array
-                        if release["sdks"] ~= nil then
+                        if release["sdks"] ~= nil and type(release["sdks"]) == "table" then
                             for _, sdk in ipairs(release["sdks"]) do
                                 if sdk["version"] ~= nil then
                                     local version = sdk["version"]

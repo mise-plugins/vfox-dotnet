@@ -95,10 +95,10 @@ function PLUGIN:Available(ctx)
         end
     end
 
-    -- Sort versions (newest first) using a simple comparison
+    -- Sort versions (oldest first) using a simple comparison
     -- Versions are like "10.0.102", "9.0.309", etc.
     table.sort(result, function(a, b)
-        return a.version > b.version
+        return a.version < b.version
     end)
 
     return result

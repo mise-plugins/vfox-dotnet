@@ -95,10 +95,50 @@ function PLUGIN:Available(ctx)
         end
     end
 
-    -- Sort versions (oldest first) using a simple comparison
-    -- Versions are like "10.0.102", "9.0.309", etc.
+    -- Sort versions (oldest first) using semver comparison
+    -- Versions are like "10.0.102", "9.0.309-preview.1", etc.
     table.sort(result, function(a, b)
-        return a.version < b.version
+        -- Split version into parts
+        local function parseVersion(v)
+            local parts = {}
+            -- Split on dots and dashes
+            for part in string.gmatch(v, "[^%.%-]+") do
+                local num = tonumber(part)
+                if num then
+                    table.insert(parts, {type = "num", val = num})
+                else
+                    table.insert(parts, {type = "str", val = part})
+                end
+            end
+            return parts
+        end
+
+        local partsA = parseVersion(a.version)
+        local partsB = parseVersion(b.version)
+
+        -- Compare part by part
+        local maxLen = math.max(#partsA, #partsB)
+        for i = 1, maxLen do
+            local pa = partsA[i]
+            local pb = partsB[i]
+
+            if pa == nil then return true end  -- a is shorter, comes first
+            if pb == nil then return false end -- b is shorter, comes first
+
+            if pa.type == "num" and pb.type == "num" then
+                if pa.val ~= pb.val then
+                    return pa.val < pb.val
+                end
+            elseif pa.type == "str" and pb.type == "str" then
+                if pa.val ~= pb.val then
+                    return pa.val < pb.val
+                end
+            else
+                -- Number comes before string (so "9.0.100" < "9.0.100-preview")
+                return pa.type == "num"
+            end
+        end
+        return false -- equal
     end)
 
     return result
